@@ -18,10 +18,10 @@ namespace websocketApplication
     public class WebManager
     {
         /// <summary>
-        /// 这采用ConcurrentDictionary字典，是线程安全的，不需要加锁
+        /// 这采用ConcurrentDictionary字典，是线程安全的，不需要加锁（user表）
         /// </summary>
         private static ConcurrentDictionary<string, WebSocket> _UserDictionary = new ConcurrentDictionary<string, WebSocket>();
-
+      
         #region 01-增加用户
         /// <summary>
         /// 增加用户
@@ -31,11 +31,11 @@ namespace websocketApplication
         public static bool AddUser(string userKey, WebSocket socket)
         {
 
-            bool flag = _UserDictionary.Select(d => d.Key).ToList().Contains(userKey);
+            bool flag = _UserDictionary.Select(d => d.Key).ToList().Contains(userKey);  //查找user存不存在
             if (flag == false)
             {
-                _UserDictionary[userKey] = socket;
-                return true;
+                _UserDictionary[userKey] = socket;  //不存在就添加
+                return true;   //返回登陆成功
             }
             else
             {
@@ -108,20 +108,35 @@ namespace websocketApplication
         /// <param name="content"></param>
         /// <param name="myUserKey">当前用户标记</param>
         /// <returns></returns>
-        public static void SendAllMessage(CancellationToken cancellationToken, string content, string myUserKey)
+        public static void SendAllMessage(CancellationToken cancellationToken,  string myUserKey)
         {
             try
-            {
+            {     
+                 Content contentObj = new Content();
+                 string content = myUserKey + " ：" + contentObj.msgText + "             >           >" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
                 ArraySegment<byte> buffer = new ArraySegment<byte>(new byte[2048]);
                 buffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(content));
                 //群发消息，但不包括自己
                 foreach (var item in _UserDictionary)
                 {
-                    if (item.Key.ToString() != myUserKey)
-                    {
+                    if (item.Key.ToString() != myUserKey){
                         item.Value.SendAsync(buffer, WebSocketMessageType.Text, true, cancellationToken);
                     }
                 }
+
+                 content = "我：" + contentObj.msgText + "  >   " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                ArraySegment<byte> bufferI = new ArraySegment<byte>(new byte[2048]);
+                bufferI = new ArraySegment<byte>(Encoding.UTF8.GetBytes(content));
+                //离开提醒
+                foreach (var item1 in _UserDictionary)
+                {
+                    if (item1.Key.ToString() == myUserKey)
+                    {
+                         item1.Value.SendAsync(bufferI, WebSocketMessageType.Text, true, cancellationToken);
+                    }
+                }
+
             }
             catch (Exception ex)
             {
@@ -138,10 +153,12 @@ namespace websocketApplication
         /// <param name="content"></param>
         /// <param name="receiveKey">接收者的标识</param>
         /// <returns></returns>
-        public static void SendSingleMessage(CancellationToken cancellationToken, string content, string receiveKey)
+        public static void SendSingleMessage(CancellationToken cancellationToken, string myUserKey, string receiveKey)
         {
             try
             {
+                Content contentObj = new Content();
+                string content = myUserKey + " ：" + contentObj.msgText + "             >           >" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                 ArraySegment<byte> buffer = new ArraySegment<byte>(new byte[2048]);
                 buffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(content));
                 //单发消息
@@ -150,6 +167,19 @@ namespace websocketApplication
                     if (item.Key.ToString() == receiveKey)
                     {
                         item.Value.SendAsync(buffer, WebSocketMessageType.Text, true, cancellationToken);
+                    }
+                }
+
+                //给自己发一条
+                content = "我：" + contentObj.msgText + "             >           >" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                ArraySegment<byte> bufferI = new ArraySegment<byte>(new byte[2048]);
+                bufferI = new ArraySegment<byte>(Encoding.UTF8.GetBytes(content));
+                //离开提醒
+                foreach (var item1 in _UserDictionary)
+                {
+                    if (item1.Key.ToString() == myUserKey)
+                    {
+                        item1.Value.SendAsync(bufferI, WebSocketMessageType.Text, true, cancellationToken);
                     }
                 }
             }
@@ -184,5 +214,44 @@ namespace websocketApplication
         }
         #endregion
 
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class Content
+    { 
+        private static String _msgText = "";
+        private static String _userKey = "";
+        private static String _dateTime = "";
+        public  String msgText
+        {
+            get {
+                return _msgText;
+            }
+            set{
+                _msgText = value;
+            }
+        }
+        public  String userKey
+        {
+            get {
+                return _userKey;
+            }
+            set{
+                _userKey = value;
+            }
+        }
+        public  String dateTime
+       {
+           get
+           {
+               return _dateTime;
+           }
+           set
+           {
+               _dateTime = value;
+           }
+       }
     }
 }
