@@ -1,0 +1,147 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Chat</title>
+    @*<script src="~/Scripts/jquery-3.3.1.min.js"></script>*@
+    <script src="~/Scripts/jquery-1.10.2.min.js"></script>
+    <script>
+
+        //封装WebSocket的相关方法
+        (function (w) {
+            //声明全局对象
+            var ws; //websocket对象
+            var url = "ws://localhost:48036/webSocketHandler.ashx";   //连接地址
+            var mainUitls = {
+                //1.初始化基本事件
+                init: function () {
+                    this.initClick();
+                },
+                //2.建立通讯事件
+                initConnect: function () {
+                    var newUrl = url + "?userKey=" + $("#j_userKey").val();
+
+                    ws = new WebSocket(newUrl);
+                    //2.1 网络建立连接的时候触发该事件
+                    ws.onopen = function () {
+                        $('#j_notice').html('已经连接');
+                    }
+                    //2.2 接受服务器发来消息时触发事件
+                    ws.onmessage = function (evt) {
+                        $("#j_Msg").append("<li>" + evt.data + "</li>");
+                    }
+                    //2.3 网络错误时候触发
+                    ws.onerror = function (evt) {
+                        $('#j_notice').html(JSON.stringify(evt));
+                    }
+                    //2.4 当连接关闭的时候触发该事件
+                    ws.onclose = function () {
+                        //这里根据实际场景来编写 (比如断线重连机制)
+                        //该版本只是简单的给个提示
+                        $('#j_notice').html("连接断开");
+                    }
+                },
+                //3. 各种点击事件
+                initClick: function () {
+                    //3.1 建立连接
+                    $("#j_connect").on("click", function () {
+                        if ($("#j_userKey").val() == "") {
+                            $('#j_notice').html("请输入用户标记");
+                            return;
+                        }
+                        mainUitls.initConnect();
+                    });
+                    //3.2 关闭连接
+                    $("#j_close").on("click", function () {
+                        ws.close();
+                    });
+                    //3.3 群发发送消息
+                    $("#j_send").on("click", function () {
+                        //表示与服务器已经建立好连接
+                        if (ws.readyState == WebSocket.OPEN) {
+                            ws.send($('#j_content').val());
+                        }
+                            //表示与服务器连接已经断开
+                        else if (ws.readyState == WebSocket.CLOSED) {
+                            $('#j_notice').html('与服务器连接已经断开');
+                        }
+                            //表示正在尝试与服务建立连接
+                        else if (ws.readyState == WebSocket.CONNECTING) {
+                            $('#j_notice').html('正在尝试与服务建立连接');
+                        }
+                            //正在关闭与服务器连接
+                        else if (ws.readyState == WebSocket.CLOSING) {
+                            $('#j_notice').html('正在关闭与服务器连接');
+                        }
+
+                    });
+                    //3.4 单发消息
+                    $("#j_send2").on("click", function () {
+                        var msg = $('#j_receiveUserKey').val();
+                        if (msg == "") {
+                            $('#j_notice').html('请输入接收人的标识');
+                            return;
+                        }
+                        //下面对内容进行拼接
+                        // "$--$--**" + msg + "$--$--**" + "发送的内容";
+
+                        var finalMsg = "$--$--**" + msg + "$--$--**" + $('#j_content').val();
+
+                        //表示与服务器已经建立好连接
+                        if (ws.readyState == WebSocket.OPEN) {
+                            ws.send(finalMsg);
+                        }
+                            //表示与服务器连接已经断开
+                        else if (ws.readyState == WebSocket.CLOSED) {
+                            $('#j_notice').html('与服务器连接已经断开');
+                        }
+                            //表示正在尝试与服务建立连接
+                        else if (ws.readyState == WebSocket.CONNECTING) {
+                            $('#j_notice').html('正在尝试与服务建立连接');
+                        }
+                            //正在关闭与服务器连接
+                        else if (ws.readyState == WebSocket.CLOSING) {
+                            $('#j_notice').html('正在关闭与服务器连接');
+                        }
+
+                    });
+                }
+
+            };
+
+            w.mainUitls = mainUitls;
+        })(window)
+
+        $(function () {
+            mainUitls.init();
+        });
+    </script>
+</head>
+<body>
+    <div>
+        <div><span>提示：</span><span id="j_notice"></span></div>
+        <div style="margin-top:20px">
+            <input type="text" name="name" value="" placeholder="请输入登录标识" id="j_userKey" />
+            <button id="j_connect">建立连接</button>
+            <button id="j_close">关闭连接</button>
+        </div>
+        <div style="margin-top:20px">
+            <input type="text" value="" placeholder="请输入发送内容" id="j_content" />
+            <button id="j_send">群发</button>
+        </div>
+
+        <div style="margin-top:20px">
+            <input type="text" value="" placeholder="请输入接收人标识" id="j_receiveUserKey" />
+            <button id="j_send2">单发</button>
+        </div>
+        <div>
+            <ul id="j_Msg"></ul>
+        </div>
+    </div>
+</body>
+</html>
