@@ -10,6 +10,31 @@
     <title>Chat</title>
     @*<script src="~/Scripts/jquery-3.3.1.min.js"></script>*@
     <script src="~/Scripts/jquery-1.10.2.min.js"></script>
+   
+</head>
+<body>
+    <div>
+        <div><span id="server_url"></span><span id="j_notice"></span></div>
+
+        <div><span>提示：</span><span id="j_notice"></span></div>
+        <div style="margin-top:20px">
+            <input type="text" name="name" value="" placeholder="请输入登录标识" id="j_userKey" />
+            <button id="j_connect">建立连接</button>
+            <button id="j_close">关闭连接</button>
+        </div>
+        <div style="margin-top:20px">
+            <input type="text" value="" placeholder="请输入发送内容" id="j_content" />
+            <button id="j_send">群发</button>
+        </div>
+
+        <div style="margin-top:20px">
+            <input type="text" value="" placeholder="请输入接收人标识" id="j_receiveUserKey" />
+            <button id="j_send2">单发</button>
+        </div>
+        <div>
+            <ul id="j_Msg"></ul>
+        </div>
+    </div>
  <script>
 
         //封装WebSocket的相关方法
@@ -18,7 +43,7 @@
             var ws; //websocket对象
             var url = "ws://192.168.0.108/webSocketHandler.ashx";  //连接地址 "ws://localhost:48036/webSocketHandler.ashx";
             document.getElementById('server_url').innerText = '服务地址：' + url;
-            var socket_b = true;
+       
             var socket_bool = 0;
             var mainUitls = {
                 //1.初始化基本事件
@@ -58,12 +83,7 @@
                         //这里根据实际场景来编写 (比如断线重连机制)
                         //该版本只是简单的给个提示
                         ws.close();
-                        if (socket_b) {
-                            socket_b = false;
-                            url = "ws://localhost:48036/webSocketHandler.ashx";
-                            ws = null;
-                            mainUitls.init();
-                        }
+                       
                        
                         $('#j_notice').html("连接断开");
                     }
@@ -72,6 +92,9 @@
                 initClick: function () {
                     //3.1 建立连接
                     $("#j_connect").on("click", function () {
+                        //if (socket_bool) {
+                        //    return;
+                        //}
                         if ($("#j_userKey").val() == "") {
                             $('#j_notice').html("请输入用户标记");
                             return;
@@ -143,29 +166,8 @@
 
         $(function () {
             mainUitls.init();
+            
         });
     </script>
-</head>
-<body>
-    <div>
-        <div><span>提示：</span><span id="j_notice"></span></div>
-        <div style="margin-top:20px">
-            <input type="text" name="name" value="" placeholder="请输入登录标识" id="j_userKey" />
-            <button id="j_connect">建立连接</button>
-            <button id="j_close">关闭连接</button>
-        </div>
-        <div style="margin-top:20px">
-            <input type="text" value="" placeholder="请输入发送内容" id="j_content" />
-            <button id="j_send">群发</button>
-        </div>
-
-        <div style="margin-top:20px">
-            <input type="text" value="" placeholder="请输入接收人标识" id="j_receiveUserKey" />
-            <button id="j_send2">单发</button>
-        </div>
-        <div>
-            <ul id="j_Msg"></ul>
-        </div>
-    </div>
 </body>
 </html>
