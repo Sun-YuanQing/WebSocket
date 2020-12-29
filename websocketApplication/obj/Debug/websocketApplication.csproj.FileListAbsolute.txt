@@ -71,7 +71,6 @@ E:\Work Demo\WebSocket\websocketApplication\websocketApplication\bin\zh-Hans\Mic
 E:\Work Demo\WebSocket\websocketApplication\websocketApplication\bin\zh-Hans\Microsoft.Owin.Security.MicrosoftAccount.resources.dll
 E:\Work Demo\WebSocket\websocketApplication\websocketApplication\obj\Debug\websocketApplication.dll
 E:\Work Demo\WebSocket\websocketApplication\websocketApplication\obj\Debug\websocketApplication.pdb
-E:\HMTL5_Demo\myGit-wrok\WebScket_C\websocketApplication\obj\Debug\websocketApplication.csprojResolveAssemblyReference.cache
 E:\HMTL5_Demo\myGit-wrok\WebScket_C\websocketApplication\obj\Debug\websocketApplication.dll
 E:\HMTL5_Demo\myGit-wrok\WebScket_C\websocketApplication\bin\websocketApplication.dll
 E:\HMTL5_Demo\myGit-wrok\WebScket_C\websocketApplication\bin\websocketApplication.pdb
